@@ -28,18 +28,12 @@ const App = () => {
     JSON.parse(localStorage.getItem("isAdmin"))
   );
 
-  const [PUF, setPUF] = useState(JSON.parse(localStorage.getItem("PUF")));
   const [ipfs, setIpfs] = useState(JSON.parse(localStorage.getItem("IPFS")));
-
-  const PUFhandler = (key) => {
-    localStorage.setItem("PUF", JSON.stringify(key));
-    console.log(key);
-  };
 
   const IPFSHandler=(key)=>{
     localStorage.setItem("IPFS", JSON.stringify(key));
     console.log(key);
-  }
+  };
 
   const logOutHandler = () => {
     localStorage.removeItem("user");
@@ -78,7 +72,7 @@ const App = () => {
           <Routes>
             <Route
               path="/"
-              element={<HomePage user={user} PUFhandler={PUFhandler} IPFSHandler={IPFSHandler}/>}
+              element={<HomePage user={user} IPFSHandler={IPFSHandler}/>}
             />
               }
             />
@@ -131,7 +125,6 @@ const App = () => {
               path="/validate"
               element={
                 <Validate
-                  PUF={PUF}
                   ipfs={ipfs}
                   user={user}
                 />

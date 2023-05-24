@@ -5,7 +5,8 @@ import "./SimpleTable.css";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import { useNavigate } from "react-router-dom";
 
-const Table = ({ fileData,user,PUFhandler ,IPFSHandler}) => {
+const Table = ({ device,fileData,user,IPFSHandler}) => {
+  console.log(device);
   const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
   const [dataRecevied, setDataRecieved] = useState(false);
@@ -52,13 +53,18 @@ const {
     }
   }, [dataRecevied]);
 
-  const handleDownload = async (IpfsHash,Puf) => {
+  useEffect(() => {
+    if (fileData.length > 0) {
+      setLoading(false);
+    }
+  }, [fileData]);
+
+  const handleDownload = async (IpfsHash) => {
     // Here you can add your download logic, for example:
     // console.log(user[3],IpfsHash);
     // console.log(PUF);
-    PUFhandler(Puf);
     IPFSHandler(IpfsHash);
-    navigate("/validate");
+    navigate("/validate",{ state: { device } });
   };
 
   const [searchtext, setSearch] = useState("");
@@ -108,7 +114,7 @@ const {
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDownload(software[0],software[7]);
+                            handleDownload(software[0]);
                           }}
                         >
                           {selected === index ? "Download" : "Download"}

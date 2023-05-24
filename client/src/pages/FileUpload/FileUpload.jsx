@@ -9,6 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import PacmanLoader from "react-spinners/PacmanLoader";
 
 const JWT = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI0NjhkMTgxMS1lOGI1LTQzZDUtYTg4OS0xYjliZWI1NjgzNTkiLCJlbWFpbCI6ImlpdDIwMjAxMDNAaWlpdGEuYWMuaW4iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJpZCI6IkZSQTEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX0seyJpZCI6Ik5ZQzEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiOWFhMDdkOTBmNTc0NWRiOTQ2ODEiLCJzY29wZWRLZXlTZWNyZXQiOiI2ZDQxOWQ2MzBiZDkwODBhNWFhNGJmZDAyOGViNDM2MWIzNDEwNmRiYzJlMDU0YTZjZDVhM2NjMDRiNDg3MDllIiwiaWF0IjoxNjc5ODUxODMzfQ.-f10NGa3eB6SzzuXXxU-w4p450Bhourg9xJEJURqpgo`;
+const apiKey = "1f0e15b676bd017973c63d02648af633e2ee1c3e6fc1d303743913d94c0dfcb0";
 
 const FileUpload = ({ user, isAdmin }) => {
   const [file, setFile] = useState(null);
@@ -29,6 +30,9 @@ const FileUpload = ({ user, isAdmin }) => {
   const [selectedOption, setSelectedOption] = useState("");
   const [UploadedFile, setUploadedFile] = useState(null);
   const [devices,setDevices] = useState([]);
+
+  const [scanResult, setScanResult] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (ipfsHash != "") {
@@ -85,9 +89,38 @@ const FileUpload = ({ user, isAdmin }) => {
   };
 
   // Function to handle file upload
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     setFile(event.target.files[0]);
+    try {
+        const scanResult = await performFileScan(file);
+        console.log(scanResult);
+        setScanResult(scanResult);
+        setError(null); // Reset the error state
+      } catch (error) {
+        setError(error);
+        setScanResult(null); // Reset the scan result state
+      }
+      if(error) {
+        console.log("Not safe")
+      } else {
+        console.log("Safe")
+      }
   };
+
+  const performFileScan = async (file) => {
+      const url = "https://www.virustotal.com/api/v3/files";
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      const response = await axios.post(url, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "x-apikey": apiKey
+        }
+      });
+  
+      return response.data;
+    };
 
   const handleSubmission = async () => {
     setFileName(file.name);
@@ -152,6 +185,7 @@ const FileUpload = ({ user, isAdmin }) => {
 
     setIsUploaded(false);
   };
+
 
   const changeImage = (e) => {
     setFile(e.target.files[0]);
@@ -235,7 +269,7 @@ const FileUpload = ({ user, isAdmin }) => {
                 <select className="form-control" value={selectedOption} onChange={handleDropdownChange}>
                 <option value="">Select Device</option>
                 {devices && devices.map((device) => (
-                  <option value={device.id} key={device.id}>{device.name}</option>
+                  <option value={device.DeviceId} key={device.DeviceIdDeviceId}>{device.DeviceId}</option>
                   ))}
                 </select>
                 </div>

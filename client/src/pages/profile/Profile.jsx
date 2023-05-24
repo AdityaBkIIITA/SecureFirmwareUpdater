@@ -30,9 +30,8 @@ const Profile = ({ isAdmin, user, isLogedIn }) => {
     fileDataforManufacture,
     fileDataForDevice
   } = useFile();
-
-  const devices = getDevicesByMId(user[4]);
-  console.log(devices);
+  
+  // console.log(devices);
 
   const [newAdmin, setNewAdmin] = useState("");
 

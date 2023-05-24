@@ -106,20 +106,23 @@ const FileProvider = ({ children }) => {
   };
 
   const getFilesByDeviceId = async (deviceId) => {
-    const filedata = await contract.call("getfiles");
+    const filedata = await contract.call("getfiles",deviceId);
     console.log(filedata);
     setfileDataforDevice([...filedata]);
+    return filedata;
   };
 
   const getDevicesByMId = async (mId) => {
-    const filedata = await contract.call("getDevices");
-    console.log(filedata);
+    const filedata = await contract.call("getDevices", mId);
+    // console.log(filedata);
     setfileDataforManufacture([...filedata]);
+    return filedata;
   };
 
   const getFilesFunction = async () => {
     const filedata = await contract.call("getFiles");
     setfileData([...filedata]);
+    return filedata;
   };
 
   const isAdminFunction = async (address) => {

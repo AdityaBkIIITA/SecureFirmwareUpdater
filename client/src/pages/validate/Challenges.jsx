@@ -4,6 +4,11 @@ import crypto from "crypto-browserify";
 import sjcl from 'sjcl';
 import "./Challenges.css";
 import { useFile } from "../../context/index";
+import axios from "axios";
+
+
+const JWT = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI0NjhkMTgxMS1lOGI1LTQzZDUtYTg4OS0xYjliZWI1NjgzNTkiLCJlbWFpbCI6ImlpdDIwMjAxMDNAaWlpdGEuYWMuaW4iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJpZCI6IkZSQTEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX0seyJpZCI6Ik5ZQzEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiOWFhMDdkOTBmNTc0NWRiOTQ2ODEiLCJzY29wZWRLZXlTZWNyZXQiOiI2ZDQxOWQ2MzBiZDkwODBhNWFhNGJmZDAyOGViNDM2MWIzNDEwNmRiYzJlMDU0YTZjZDVhM2NjMDRiNDg3MDllIiwiaWF0IjoxNjc5ODUxODMzfQ.-f10NGa3eB6SzzuXXxU-w4p450Bhourg9xJEJURqpgo`;
+
 
 import {
   MDBBtn,
@@ -18,18 +23,9 @@ import {
 } from "mdb-react-ui-kit";
 import { Alert } from "bootstrap";
 
-const Challenges = ({ challenges, PUF, ipfs, user }) => {
+const Challenges = ({ challenges, device, ipfs, user }) => {
 
-  console.log(challenges);
-
-  const sha256=(message)=>{
-    const myString = message;
-    const myBitArray = sjcl.hash.sha256.hash(myString)
-    const myHash = sjcl.codec.hex.fromBits(myBitArray)
-    // console.log(myHash);
-    return myHash;
-  }
-
+  console.log(ipfs);
 
   const {
     fileData,
@@ -43,67 +39,23 @@ const Challenges = ({ challenges, PUF, ipfs, user }) => {
     filesdownloadedbyUser,
   } = useFile();
 
-  const pufKey = PUF;
-
-  const op1=sha256(challenges[0] + pufKey);
-  const op2=sha256(challenges[1] + pufKey);
-  const op3=sha256(challenges[2] + pufKey);
-
-  const [response1, setresponse1] = useState(op1);
-  const [response2, setresponse2] = useState(op2);
-  const [response3, setresponse3] = useState(op3);
   const [Url,setUrl]=useState();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(()=>{
-    console.log(PUF);
-    console.log("1:",op1);
-    console.log("2:",op2);
-    console.log("3:",op3);
-  },[])
-
-const download=async()=>{
+const download = async()=>{
   const baseURL = `https://gateway.pinata.cloud/ipfs/`;
     const URL = `${baseURL}${ipfs}`;
     setUrl(URL);
     // downloadFun(URL);
     console.log("before");
     const data = await newDownloadByUserFunction(user[3], ipfs);
-    // console.log(data.receipt);
+    console.log(data.receipt);
 
     if (data.receipt) {
       console.log("test: ", URL);
       window.location.replace(URL);
     }
 }
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    // console.log(pufKey);
-
-    if (
-      op1 == response1 &&
-      op2 == response2 &&
-      op3 == response3
-    ) {
-      console.log("Correct");
-      download();
-    } else {
-      // console.log("Please try again..");
-      alert("Please try again..");
-    }
-  };
-
-  const func1 = (event) => {
-    setresponse1(event.target.value);
-  };
-
-  const func2 = (event) => {
-    setresponse2(event.target.value);
-  };
-
-  const func3 = (event) => {
-    setresponse3(event.target.value);
-  };
   const handleDownloadAllChallenges = () => {
     const challengesText = challenges.join("\n");
     const blob = new Blob([challengesText], { type: "text/plain" });
@@ -114,19 +66,59 @@ const download=async()=>{
     link.click();
   };
 
-  const handleUploadResponseFile = (event) => {
+  const handleUploadResponseFile = async (event) => {
     const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-      const contents = event.target.result;
-      const uploadedResponses = contents.split("\n").filter((response) => response.trim() !== "");
-      console.log("Uploaded Responses:", uploadedResponses);
-      // Perform any processing or validation with the uploaded responses
-    };
-
-    reader.readAsText(file);
+    const respHash = await getIPFSHash(file);
+    console.log(respHash);
+    console.log(device[1]);
+    if(respHash === device[1]){
+      download();
+    }
+    else{
+      alert("Please try again..");
+    }
   };
+
+
+  const getIPFSHash = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const metadata = JSON.stringify({
+      name: "File name",
+    });
+
+    formData.append("pinataMetadata", metadata);
+
+    const options = JSON.stringify({
+      cidVersion: 0,
+    });
+    formData.append("pinataOptions", options);
+
+    try {
+      setLoading(true); // Set loading to true when starting the request
+      const res = await axios.post(
+        "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        formData,
+        {
+          maxBodyLength: "Infinity",
+          headers: {
+            "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
+            Authorization: JWT,
+          },
+        }
+      );
+      const ipfsHash = res.data.IpfsHash;
+      console.log(ipfsHash);
+      return ipfsHash;
+    } catch (error) {
+      console.log(error);
+      return null;
+    } finally {
+      setLoading(false); // Set loading to false after the request is completed
+    }
+  };
+
   return (
     <MDBContainer style={{ maxWidth: "1200px" }}>
       <MDBCard
