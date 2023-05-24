@@ -1,25 +1,9 @@
-/**,
+*,
 ::before,
 ::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-body {
-  background: black;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  width: 500px;
-  height: 50px;
-  background: #f1f1f1;
-  margin: 100px auto 0;
-  word-break: break-all;
-  border: 1px solid rgba(0, 0, 0, 0.274);
 }
 
 .bloc-tabs {
@@ -30,7 +14,7 @@ body {
   padding: 15px;
   text-align: center;
   width: 50%;
-  background: #ACB1D6;
+  background: #4C4C6D;
   cursor: pointer;
   border-bottom: 1px solid rgba(0, 0, 0, 0.274);
   box-sizing: content-box;
@@ -43,7 +27,7 @@ body {
 }
 
 .active-tabs {
-  background: white;
+  background: #B799FF;
   border-bottom: 1px solid transparent;
 }
 
@@ -95,4 +79,3 @@ button {
 .active-content {
   display: block;
 }
-*/

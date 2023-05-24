@@ -1,22 +1,62 @@
 import { useState } from "react";
 import "./homePage.css";
 import { Col, Container, Row, Dropdown } from "react-bootstrap";
+import { useFile } from "../../context/index";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SimpleTable from "../table/SimpleTable";
+import { ToastContainer, toast } from "react-toastify";
 
 const HomePage = ({ user,PUFhandler ,IPFSHandler}) => {
 const [inputId, setInputId] = useState("");
 const [adminId, setAdminId] = useState(false);
 const [showTable, setShowTable] = useState(false);
 const [selectedOption, setSelectedOption] = useState("");
+const [devices, setDevices] = useState([]);
+const [fileData, setFileData] = useState([]);
+const {
+    address,
+    contract,
+    connect,
+    addFileFunction,
+    isAdminFunction,
+    signInFunction,
+    signUpFunction,
+    newDownloadByUserFunction,
+    adminAddFunction,
+    filesUploadedbyAdmin,
+    filesdownloadedbyUser,
+    addDevices,
+    getFilesByDeviceId,
+    getDevicesByMId,
+    fileDataforManufacture,
+    fileDataForDevice
+  } = useFile();
 
-  const onButtonClick = () => {
-    console.log("Input Id is: ", inputId);
-    setAdminId(true);
-  };
+
+  const onButtonClick = async () => {
+  console.log("Input Id is: ", inputId);
+  setAdminId(true);
+
+  if (inputId) {
+    const result = await getDevicesByMId(inputId);
+    console.log(result);
+    setDevices(result);
+
+    if (result.length === 0) {
+      toast.error("Wrong manufacturer ID");
+      setInputId(""); // Clear the input field
+      setAdminId(false);
+    }
+  }
+};
+
+
 
   const UpdateButton = () => {
     setShowTable(true);
+    const files = getFilesByDeviceId(selectedOption);
+    setFileData(files);
+
   };
 
   const handleDropdownChange = (event) => {
@@ -25,6 +65,19 @@ const [selectedOption, setSelectedOption] = useState("");
 
   return (
     <>
+    <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+      <ToastContainer />
       <Container>
       <div className="head">Welcome to our file download page!</div>
           <div className="para">
@@ -62,21 +115,31 @@ const [selectedOption, setSelectedOption] = useState("");
       {selectedOption ? selectedOption : 'Select Device'}
     </Dropdown.Toggle>
     <Dropdown.Menu>
-      <Dropdown.Item href="#/action-1" onClick={() => setSelectedOption('Device 1')}>Device 1</Dropdown.Item>
-      <Dropdown.Item href="#/action-2" onClick={() => setSelectedOption('Device 2')}>Device 2</Dropdown.Item>
-      <Dropdown.Item href="#/action-3" onClick={() => setSelectedOption('Device 3')}>Device 3</Dropdown.Item>
+    {devices.map((device) => (
+      <Dropdown.Item key={device.id} onClick={() => setSelectedOption(device.name)}>
+      {device.name}
+      </Dropdown.Item>
+      ))}
     </Dropdown.Menu>
   </Dropdown>
 </div>
 
-              <div className="flex-item">
-                <button type="button" onClick={UpdateButton}>
+<div className="flex-item">
+<button type="button" onClick={UpdateButton}>
                   View Updates
                 </button>
               </div>
             </div>
           )}
-        {showTable && <SimpleTable user={user} PUFhandler={PUFhandler} IPFSHandler={IPFSHandler}/>}
+        {showTable && (
+  <SimpleTable
+    fileData={fileData}
+    user={user}
+    PUFhandler={PUFhandler}
+    IPFSHandler={IPFSHandler}
+  />
+)}
+
       </Container>
     </>
   );

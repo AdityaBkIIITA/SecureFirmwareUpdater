@@ -5,7 +5,7 @@ import "./SimpleTable.css";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import { useNavigate } from "react-router-dom";
 
-const Table = ({ user,PUFhandler ,IPFSHandler}) => {
+const Table = ({ fileData,user,PUFhandler ,IPFSHandler}) => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
   const [dataRecevied, setDataRecieved] = useState(false);
@@ -20,8 +20,10 @@ const Table = ({ user,PUFhandler ,IPFSHandler}) => {
     else setExpand(index);
   };
 
-  const {
-    fileData,
+const {
+    address,
+    contract,
+    connect,
     addFileFunction,
     isAdminFunction,
     signInFunction,
@@ -30,13 +32,12 @@ const Table = ({ user,PUFhandler ,IPFSHandler}) => {
     adminAddFunction,
     filesUploadedbyAdmin,
     filesdownloadedbyUser,
+    addDevices,
+    getFilesByDeviceId,
+    getDevicesByMId,
+    fileDataforManufacture,
+    fileDataForDevice
   } = useFile();
-
-  useEffect(() => {
-    console.log("data in Table file...", fileData);
-
-    if (fileData != undefined && fileData.length > 0) setLoading(false);
-  }, [fileData]);
 
   // const downloadFun = (URL) => {
   //   console.log("test: ", URL);

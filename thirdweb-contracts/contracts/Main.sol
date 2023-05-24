@@ -10,7 +10,6 @@ contract Main {
         string dateAdded;
         string timeAdded;
         uint256 downloadCount;
-        string PUF;
     }
     
 
@@ -20,7 +19,22 @@ contract Main {
         string username;
         string email;
         bool isexist;
+        bool isAdmin;
+        string adminId;
     }
+
+    struct ChallengeResponseFiles {
+        string ChallengeHash;
+        string ResponseHash;
+        string DeviceId;
+    }
+
+
+    //Manufacturer ID mapped with challenge response and file info
+    mapping(string => ChallengeResponseFiles[]) public CRList;
+
+    // Device id mapped with docInfo
+    mapping(string => DocInfo[]) public filehashList;
 
     DocInfo[] private metadata;
     // storing metadata of uploaded files
@@ -40,7 +54,7 @@ contract Main {
 
     constructor() {
         adminList.push("0xAE608b5d19f6CaEB6728b2f57924BF78a58bD539");
-        // first admin only who can add another admins
+        // first admin,  only who can add another admins
     }
 
     modifier validAdmin(string memory prev, string memory newAdmin) {
@@ -76,6 +90,37 @@ contract Main {
         _;
     }
 
+    // added a new device by an admin
+        function addDevice(
+        string memory _ChallengeHash,
+        string memory _ResponseHash,
+        string memory _DeviceId,
+        string memory _mId
+    ) public {
+        ChallengeResponseFiles memory docInfo = ChallengeResponseFiles(
+                 _ChallengeHash,
+                _ResponseHash,
+                _DeviceId
+        );
+
+        CRList[_mId].push(docInfo);
+    }
+
+    // get all devices for an admin
+    function getDevices(
+        string memory _mId
+    ) public view returns(ChallengeResponseFiles[] memory){
+        return CRList[_mId];
+    }
+
+    // get all files for an device
+    function getfiles(
+        string memory _deviceId
+    ) public view returns(DocInfo[] memory){
+        return filehashList[_deviceId];
+    }
+
+
     // before adding a new admin check 2 things:
     // 1) new user is not in admin list
     // 2) prev. user is in admin list
@@ -92,9 +137,11 @@ contract Main {
         string memory _address,
         string memory _name,
         string memory _userName,
-        string memory _email
+        string memory _email,
+        bool _isAdmin,
+        string memory _adminId
     ) public isSignUp(_address) {
-        UserInfo memory userInfo = UserInfo(_name, _userName, _email, true);
+        UserInfo memory userInfo = UserInfo(_name, _userName, _email, true, _isAdmin, _adminId);
 
         userNameToData[_address] = userInfo;
     }
@@ -130,7 +177,7 @@ contract Main {
         string memory _dateAdded,
         string memory _timeAdded,
         uint256 _fileSize,
-        string memory _PUF
+        string memory _deviceId
     ) public {
         DocInfo memory docInfo = DocInfo(
             _ipfsHash,
@@ -139,9 +186,10 @@ contract Main {
             _fileSize,
             _dateAdded,
             _timeAdded,
-            0,
-            _PUF
+            0
         );
+
+        filehashList[_deviceId].push(docInfo);
 
         metadata.push(docInfo);
         newUploadByAdmin(_address, _ipfsHash);

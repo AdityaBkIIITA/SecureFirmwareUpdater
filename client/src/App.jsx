@@ -78,7 +78,7 @@ const App = () => {
           <Routes>
             <Route
               path="/"
-              element={<HomePage user={data} PUFhandler={PUFhandler} IPFSHandler={IPFSHandler}/>}
+              element={<HomePage user={user} PUFhandler={PUFhandler} IPFSHandler={IPFSHandler}/>}
             />
               }
             />
@@ -107,23 +107,23 @@ const App = () => {
 
             <Route
               path="/fileUpload"
-              element={<FileUpload isAdmin={isAdmin} />}
+              element={<FileUpload user={user} isAdmin={isAdmin} />}
             />
 
             <Route
               path="/addDevice"
-              element={<AddDevice isAdmin={isAdmin} />}
+              element={<AddDevice user={user} isAdmin={isAdmin} />}
             />
 
             <Route
               path="/history"
-              element={<History isAdmin={isAdmin} user={data} />}
+              element={<History isAdmin={isAdmin} user={user} />}
             />
 
             <Route
               path="/profile"
               element={
-                <Profile isAdmin={isAdmin} user={data} isLogedIn={isLogedIn} />
+                <Profile isAdmin={isAdmin} user={user} isLogedIn={isLogedIn} />
               }
             />
 
@@ -133,7 +133,7 @@ const App = () => {
                 <Validate
                   PUF={PUF}
                   ipfs={ipfs}
-                  user={data}
+                  user={user}
                 />
               }
             />

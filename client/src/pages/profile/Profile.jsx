@@ -8,9 +8,13 @@ import axios from "axios";
 import { useFile } from "../../context/index";
 
 const Profile = ({ isAdmin, user, isLogedIn }) => {
+  // console.log("Profile:"+user);
   const navigate = useNavigate();
-  console.log(user[0]);
-  const {
+  // console.log(user[0]);
+ const {
+    address,
+    contract,
+    connect,
     fileData,
     addFileFunction,
     isAdminFunction,
@@ -20,7 +24,15 @@ const Profile = ({ isAdmin, user, isLogedIn }) => {
     adminAddFunction,
     filesUploadedbyAdmin,
     filesdownloadedbyUser,
+    addDevices,
+    getFilesByDeviceId,
+    getDevicesByMId,
+    fileDataforManufacture,
+    fileDataForDevice
   } = useFile();
+
+  const devices = getDevicesByMId(user[4]);
+  console.log(devices);
 
   const [newAdmin, setNewAdmin] = useState("");
 
@@ -34,7 +46,6 @@ const Profile = ({ isAdmin, user, isLogedIn }) => {
 
   const historyHandler = async () => {
     const data = await filesdownloadedbyUser(user[3]);
-    console.log(data);
 
     if (data.length == 0) {
       toast("You are not Downloaded any firmware file yet...");

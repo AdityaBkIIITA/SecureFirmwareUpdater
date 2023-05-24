@@ -10,6 +10,7 @@ const signup = ({ isLogedIn, logedinHandler, adminHandler }) => {
     fname: "",
     uname: "",
     email: "",
+    mId:"",
   });
 
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,10 @@ const signup = ({ isLogedIn, logedinHandler, adminHandler }) => {
     adminAddFunction,
     filesUploadedbyAdmin,
     filesdownloadedbyUser,
+    addDevices,
+    getFilesByDeviceId,
+    fileDataforManufacture,
+    fileDataForDevice
   } = useFile();
 
   const address = useAddress();
@@ -46,7 +51,9 @@ const signup = ({ isLogedIn, logedinHandler, adminHandler }) => {
         address,
         user.fname,
         user.uname,
-        user.email
+        user.email,
+        false,
+        mId
       );
 
       let cc = await signup.receipt;
@@ -54,7 +61,7 @@ const signup = ({ isLogedIn, logedinHandler, adminHandler }) => {
       console.log(cc);
 
       if (cc != undefined) {
-        const signupuser = [user.fname, user.uname, user.email, address];
+        const signupuser = [user.fname, user.uname, user.email, address, mId];
         console.log(signupuser);
         logedinHandler(signupuser);
 

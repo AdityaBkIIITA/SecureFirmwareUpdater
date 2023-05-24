@@ -10,7 +10,7 @@ import PacmanLoader from "react-spinners/PacmanLoader";
 
 const JWT = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI0NjhkMTgxMS1lOGI1LTQzZDUtYTg4OS0xYjliZWI1NjgzNTkiLCJlbWFpbCI6ImlpdDIwMjAxMDNAaWlpdGEuYWMuaW4iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJpZCI6IkZSQTEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX0seyJpZCI6Ik5ZQzEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiOWFhMDdkOTBmNTc0NWRiOTQ2ODEiLCJzY29wZWRLZXlTZWNyZXQiOiI2ZDQxOWQ2MzBiZDkwODBhNWFhNGJmZDAyOGViNDM2MWIzNDEwNmRiYzJlMDU0YTZjZDVhM2NjMDRiNDg3MDllIiwiaWF0IjoxNjc5ODUxODMzfQ.-f10NGa3eB6SzzuXXxU-w4p450Bhourg9xJEJURqpgo`;
 
-const FileUpload = ({ isAdmin }) => {
+const FileUpload = ({ user, isAdmin }) => {
   const [file, setFile] = useState(null);
   const [displayImg, setDisplayImg] = useState("none");
 
@@ -28,6 +28,7 @@ const FileUpload = ({ isAdmin }) => {
   const [PUF, setPUF] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
   const [UploadedFile, setUploadedFile] = useState(null);
+  const [devices,setDevices] = useState([]);
 
   useEffect(() => {
     if (ipfsHash != "") {
@@ -35,8 +36,26 @@ const FileUpload = ({ isAdmin }) => {
     }
   }, [ipfsHash]);
 
+  useEffect(() => {
+  const fetchDevices = async () => {
+    try {
+      console.log(user[4]);
+      const devices = await getDevicesByMId(user[4]);
+      console.log(devices);
+      // Set the devices to populate the dropdown options
+      setDevices(devices);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchDevices();
+}, []);
+
   const {
     address,
+    contract,
+    connect,
     fileData,
     addFileFunction,
     isAdminFunction,
@@ -44,6 +63,13 @@ const FileUpload = ({ isAdmin }) => {
     signUpFunction,
     newDownloadByUserFunction,
     adminAddFunction,
+    filesUploadedbyAdmin,
+    filesdownloadedbyUser,
+    addDevices,
+    getFilesByDeviceId,
+    getDevicesByMId,
+    fileDataforManufacture,
+    fileDataForDevice
   } = useFile();
 
   console.log("FileUpload: "+address);
@@ -55,11 +81,12 @@ const FileUpload = ({ isAdmin }) => {
 
   const handleDropdownChange = (event) => {
     setSelectedOption(event.target.value);
+    console.log(selectedOption);
   };
 
   // Function to handle file upload
   const handleFileUpload = (event) => {
-    setUploadedFile(event.target.files[0]);
+    setFile(event.target.files[0]);
   };
 
   const handleSubmission = async () => {
@@ -142,10 +169,11 @@ const FileUpload = ({ isAdmin }) => {
       date,
       time,
       fileSize,
-      PUF
+      selectedOption
     );
 
     console.log(data);
+    console.log(selectedOption);
     setLoading(false);
     // setUploaded(true);
 
@@ -204,12 +232,14 @@ const FileUpload = ({ isAdmin }) => {
                 />
 
                 <div className="form-group">
-                <select value={selectedOption} onChange={handleDropdownChange}>
+                <select className="form-control" value={selectedOption} onChange={handleDropdownChange}>
                 <option value="">Select Device</option>
-                <option value="option1">Option 1</option>
-                <option value="option2">Option 2</option>
+                {devices && devices.map((device) => (
+                  <option value={device.id} key={device.id}>{device.name}</option>
+                  ))}
                 </select>
                 </div>
+
 
                 <div>
               <label className="label">
@@ -221,7 +251,7 @@ const FileUpload = ({ isAdmin }) => {
                     className="inputItem"
                   />
                 </label>
-                <button type="submit">Upload</button>
+                <button type="submit" onClick={handleSubmission}>Upload</button>
                 </div>
 
               </div>

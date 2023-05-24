@@ -1,11 +1,9 @@
 import React, { useContext, createContext, useEffect, useState } from "react";
-
 import {
   useAddress,
   useContract,
   useMetamask,
   useContractWrite,
-  useContractRead,
 } from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 import { EditionMetadataWithOwnerOutputSchema } from "@thirdweb-dev/sdk";
@@ -14,10 +12,12 @@ const FileContext = createContext();
 
 const FileProvider = ({ children }) => {
   const [fileData, setfileData] = useState([]);
-  const [ PUF, setPUF ] = useState("");
+  const [fileDataforManufacture, setfileDataforManufacture] = useState([]);
+  const [fileDataForDevice, setfileDataforDevice] = useState([]);
+  const [PUF, setPUF] = useState("");
 
   const { contract } = useContract(
-    "0x7dAa45baed51E14f27631916D79c45a0908EbAe7"
+    "0xC218DB963C4d4a65Cc7015aF640eC42cb547Dc01"
   );
 
   useEffect(() => {
@@ -46,10 +46,13 @@ const FileProvider = ({ children }) => {
     "adminAdd"
   );
 
+  const { mutateAsync: addDevice, isLoading3 } = useContractWrite(
+    contract,
+    "addDevice"
+  );
+
   const address = useAddress();
   const connect = useMetamask();
-
-  console.log("address", address);
 
   const addFileFunction = async (
     address,
@@ -59,12 +62,11 @@ const FileProvider = ({ children }) => {
     date,
     time,
     fileSize,
-    PUF
+    deviceId
   ) => {
     try {
-      console.log(ipfsHash, fileName, fileType, date, time, fileSize, PUF);
+      console.log(ipfsHash, fileName, fileType, date, time, fileSize, deviceId);
       await connect();
-      // await address();
       console.log("address...", address);
       const data = await addFile([
         address,
@@ -74,7 +76,7 @@ const FileProvider = ({ children }) => {
         date,
         time,
         fileSize,
-        PUF,
+        deviceId,
       ]);
 
       console.info("contract call successs", data);
@@ -85,9 +87,38 @@ const FileProvider = ({ children }) => {
     }
   };
 
+  const addDevices = async (_ChallengeHash, _ResponseHash, _DeviceId, _mId) => {
+    try {
+      await connect();
+      const data = await addDevice([
+        _ChallengeHash,
+        _ResponseHash,
+        _DeviceId,
+        _mId,
+      ]);
+
+      console.info("contract call successs", data);
+      return data;
+    } catch (err) {
+      console.error("contract call failure", err);
+      return err;
+    }
+  };
+
+  const getFilesByDeviceId = async (deviceId) => {
+    const filedata = await contract.call("getfiles");
+    console.log(filedata);
+    setfileDataforDevice([...filedata]);
+  };
+
+  const getDevicesByMId = async (mId) => {
+    const filedata = await contract.call("getDevices");
+    console.log(filedata);
+    setfileDataforManufacture([...filedata]);
+  };
+
   const getFilesFunction = async () => {
     const filedata = await contract.call("getFiles");
-    // console.log(filedata);
     setfileData([...filedata]);
   };
 
@@ -104,18 +135,25 @@ const FileProvider = ({ children }) => {
     return signin;
   };
 
-  const signUpFunction = async (address, name, userName, email) => {
+  const signUpFunction = async (
+    address,
+    name,
+    userName,
+    email,
+    isadmin,
+    mId
+  ) => {
     try {
       await connect();
-      // await address();
       const data = await contract.call(
         "signUp",
         address,
         name,
         userName,
-        email
+        email,
+        isadmin,
+        mId
       );
-      // signUp([address, name, userName, email]);
 
       console.info("contract call successs..", data);
       return data;
@@ -141,7 +179,6 @@ const FileProvider = ({ children }) => {
   const newDownloadByUserFunction = async (address, ipfs) => {
     try {
       await connect();
-      // await address();
       const data = await newDownloadByUser([address, ipfs]);
       console.info("contract call successs", data);
       return data;
@@ -154,7 +191,6 @@ const FileProvider = ({ children }) => {
   const adminAddFunction = async (prev, newAdmin) => {
     try {
       await connect();
-      // await address();
       const data = await adminAdd([prev, newAdmin]);
       console.info("contract call successs", data);
       return data;
@@ -181,6 +217,11 @@ const FileProvider = ({ children }) => {
         filesdownloadedbyUser,
         PUF,
         PUFgetter,
+        addDevices,
+        getFilesByDeviceId,
+        getDevicesByMId,
+        fileDataforManufacture,
+        fileDataForDevice,
       }}
     >
       {children}

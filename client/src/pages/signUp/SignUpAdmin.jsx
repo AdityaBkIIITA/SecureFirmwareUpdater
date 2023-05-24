@@ -10,6 +10,7 @@ const signupadmin = ({ isLogedIn, logedinHandler, adminHandler }) => {
     fname: "",
     uname: "",
     email: "",
+    mId:"",
   });
 
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,10 @@ const signupadmin = ({ isLogedIn, logedinHandler, adminHandler }) => {
     adminAddFunction,
     filesUploadedbyAdmin,
     filesdownloadedbyUser,
+    addDevices,
+    getFilesByDeviceId,
+    fileDataforManufacture,
+    fileDataForDevice
   } = useFile();
 
   const address = useAddress();
@@ -31,6 +36,7 @@ const signupadmin = ({ isLogedIn, logedinHandler, adminHandler }) => {
 
   const userHandler = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
+    console.log(user);
   };
 
   const registerHandler = async () => {
@@ -46,7 +52,9 @@ const signupadmin = ({ isLogedIn, logedinHandler, adminHandler }) => {
         address,
         user.fname,
         user.uname,
-        user.email
+        user.email,
+        true,
+        user.mId
       );
 
       let cc = await signup.receipt;
@@ -54,7 +62,7 @@ const signupadmin = ({ isLogedIn, logedinHandler, adminHandler }) => {
       console.log(cc);
 
       if (cc != undefined) {
-        const signupuser = [user.fname, user.uname, user.email, address];
+        const signupuser = [user.fname, user.uname, user.email, address, user.mId];
         console.log(signupuser);
         logedinHandler(signupuser);
 
@@ -103,7 +111,7 @@ const signupadmin = ({ isLogedIn, logedinHandler, adminHandler }) => {
 
             <div className="input-container">
               <label>Manufacture ID</label>
-              <input type="text" name="uname" required onChange={userHandler} />
+              <input type="text" name="mId" required onChange={userHandler} />
             </div>
 
             <div className="button-container">
